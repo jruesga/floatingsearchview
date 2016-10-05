@@ -13,6 +13,7 @@
             <enum name="showSearch" value="2" />
             <enum name="showHome" value="3" />
             <enum name="noLeftAction" value="4" />
+            <enum name="customIcon" value="5" />
         </attr>
         <attr name="floatingSearch_showVoiceInput" format="boolean"/>
         <attr name="floatingSearch_showSearchKey" format="boolean"/>

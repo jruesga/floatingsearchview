@@ -26,7 +26,9 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -107,11 +109,13 @@ public class FloatingSearchView extends FrameLayout {
     public final static int LEFT_ACTION_MODE_SHOW_SEARCH = 2;
     public final static int LEFT_ACTION_MODE_SHOW_HOME = 3;
     public final static int LEFT_ACTION_MODE_NO_LEFT_ACTION = 4;
+    public final static int LEFT_ACTION_MODE_CUSTOM = 5;
     private final static int LEFT_ACTION_MODE_NOT_SET = -1;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({LEFT_ACTION_MODE_SHOW_HAMBURGER, LEFT_ACTION_MODE_SHOW_SEARCH,
-            LEFT_ACTION_MODE_SHOW_HOME, LEFT_ACTION_MODE_NO_LEFT_ACTION, LEFT_ACTION_MODE_NOT_SET})
+            LEFT_ACTION_MODE_SHOW_HOME, LEFT_ACTION_MODE_NO_LEFT_ACTION, LEFT_ACTION_MODE_CUSTOM,
+            LEFT_ACTION_MODE_NOT_SET})
     public @interface LeftActionMode {
     }
 
@@ -155,6 +159,7 @@ public class FloatingSearchView extends FrameLayout {
     private DrawerArrowDrawable mMenuBtnDrawable;
     private Drawable mIconBackArrow;
     private Drawable mIconSearch;
+    private Drawable mCustomIcon;
     @LeftActionMode
     int mLeftActionMode = LEFT_ACTION_MODE_NOT_SET;
     private int mLeftActionIconColor;
@@ -378,6 +383,7 @@ public class FloatingSearchView extends FrameLayout {
         mIconClear = Util.getWrappedDrawable(getContext(), R.drawable.ic_clear_black_24dp);
         mIconBackArrow = Util.getWrappedDrawable(getContext(), R.drawable.ic_arrow_back_black_24dp);
         mIconSearch = Util.getWrappedDrawable(getContext(), R.drawable.ic_search_black_24dp);
+        mCustomIcon = null;
     }
 
     @Override
@@ -675,6 +681,7 @@ public class FloatingSearchView extends FrameLayout {
                             }
                             break;
                         case LEFT_ACTION_MODE_NO_LEFT_ACTION:
+                        case LEFT_ACTION_MODE_CUSTOM:
                             //do nothing
                             break;
                     }
@@ -724,6 +731,15 @@ public class FloatingSearchView extends FrameLayout {
         mMenuBtnDrawable.setColor(color);
         DrawableCompat.setTint(mIconBackArrow, color);
         DrawableCompat.setTint(mIconSearch, color);
+        if (mCustomIcon != null) {
+            DrawableCompat.setTint(mCustomIcon, color);
+        }
+    }
+
+    public void setCustomIcon(Drawable dw) {
+        mCustomIcon = dw;
+        refreshLeftIcon();
+        setLeftActionIconColor(mLeftActionIconColor);
     }
 
     /**
@@ -898,6 +914,9 @@ public class FloatingSearchView extends FrameLayout {
             case LEFT_ACTION_MODE_SHOW_HOME:
                 mLeftAction.setImageDrawable(mMenuBtnDrawable);
                 mMenuBtnDrawable.setProgress(1.0f);
+                break;
+            case LEFT_ACTION_MODE_CUSTOM:
+                mLeftAction.setImageDrawable(mCustomIcon);
                 break;
             case LEFT_ACTION_MODE_NO_LEFT_ACTION:
                 mLeftAction.setVisibility(View.INVISIBLE);
@@ -1526,6 +1545,19 @@ public class FloatingSearchView extends FrameLayout {
                     mSearchInputParent.setTranslationX(0);
                 }
                 break;
+            case LEFT_ACTION_MODE_CUSTOM:
+                mLeftAction.setImageDrawable(mIconBackArrow);
+                if (withAnim) {
+                    mLeftAction.setRotation(45);
+                    mLeftAction.setAlpha(0.0f);
+                    ObjectAnimator rotateAnim = ViewPropertyObjectAnimator.animate(mLeftAction).rotation(0).get();
+                    ObjectAnimator fadeAnim = ViewPropertyObjectAnimator.animate(mLeftAction).alpha(1.0f).get();
+                    AnimatorSet animSet = new AnimatorSet();
+                    animSet.setDuration(500);
+                    animSet.playTogether(rotateAnim, fadeAnim);
+                    animSet.start();
+                }
+                break;
         }
     }
 
@@ -1540,6 +1572,9 @@ public class FloatingSearchView extends FrameLayout {
                 break;
             case LEFT_ACTION_MODE_SHOW_HOME:
                 //do nothing
+                break;
+            case LEFT_ACTION_MODE_CUSTOM:
+                changeIcon(mLeftAction, mCustomIcon, withAnim);
                 break;
             case LEFT_ACTION_MODE_NO_LEFT_ACTION:
                 mLeftAction.setImageDrawable(mIconBackArrow);
@@ -1754,6 +1789,7 @@ public class FloatingSearchView extends FrameLayout {
         savedState.leftActionMode = mLeftActionMode;
         savedState.dimBackground = mDimBackground;
         savedState.dismissOnSoftKeyboardDismiss = this.mDismissOnOutsideTouch;
+        savedState.customIcon = this.mCustomIcon;
         return savedState;
     }
 
@@ -1784,6 +1820,7 @@ public class FloatingSearchView extends FrameLayout {
         setLeftActionMode(savedState.leftActionMode);
         setDimBackground(savedState.dimBackground);
         setCloseSearchOnKeyboardDismiss(savedState.dismissOnSoftKeyboardDismiss);
+        setCustomIcon(savedState.customIcon);
 
         mSuggestionsSection.setEnabled(this.mIsFocused);
         if (this.mIsFocused) {
@@ -1851,6 +1888,7 @@ public class FloatingSearchView extends FrameLayout {
         private boolean dimBackground;
         private long suggestionsSectionAnimSuration;
         private boolean dismissOnSoftKeyboardDismiss;
+        private Drawable customIcon;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1882,6 +1920,10 @@ public class FloatingSearchView extends FrameLayout {
             dimBackground = (in.readInt() != 0);
             suggestionsSectionAnimSuration = in.readLong();
             dismissOnSoftKeyboardDismiss = (in.readInt() != 0);
+            if (in.readInt() == 1) {
+                Bitmap bitmap = in.readParcelable(getClass().getClassLoader());
+                customIcon =  new BitmapDrawable(bitmap);
+            }
         }
 
         @Override
@@ -1911,6 +1953,11 @@ public class FloatingSearchView extends FrameLayout {
             out.writeInt(dimBackground ? 1 : 0);
             out.writeLong(suggestionsSectionAnimSuration);
             out.writeInt(dismissOnSoftKeyboardDismiss ? 1 : 0);
+            out.writeInt(customIcon != null ? 1 : 0);
+            if (customIcon != null) {
+                Bitmap bitmap = ((BitmapDrawable) customIcon).getBitmap();
+                out.writeParcelable(bitmap, flags);
+            }
         }
 
         public static final Creator<SavedState> CREATOR
