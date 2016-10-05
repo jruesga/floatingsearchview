@@ -46,6 +46,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -120,6 +121,7 @@ public class FloatingSearchView extends FrameLayout {
     private final boolean ATTRS_DISMISS_ON_OUTSIDE_TOUCH_DEFAULT = true;
     private final boolean ATTRS_DISMISS_ON_KEYBOARD_DISMISS_DEFAULT = false;
     private final boolean ATTRS_SEARCH_BAR_SHOW_SEARCH_KEY_DEFAULT = true;
+    private final int ATTRS_SEARCH_VIEW_TEXT_SIZE_SP_DEFAULT = 16;
     private final int ATTRS_SUGGESTION_TEXT_SIZE_SP_DEFAULT = 18;
     private final boolean ATTRS_SHOW_DIM_BACKGROUND_DEFAULT = true;
 
@@ -520,9 +522,10 @@ public class FloatingSearchView extends FrameLayout {
                     , Util.getColor(getContext(), R.color.gray_active_icon)));
 
             int searchBarTextSize = a.getDimensionPixelSize(
-                    R.styleable.FloatingSearchView_floatingSearch_searchBarTextSize, -1);
+                    R.styleable.FloatingSearchView_floatingSearch_searchBarTextSize,
+                    Util.spToPx(ATTRS_SEARCH_VIEW_TEXT_SIZE_SP_DEFAULT));
             if (searchBarTextSize != -1) {
-                mSearchInput.setTextSize(searchBarTextSize)
+                mSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, searchBarTextSize);
             }
 
         } finally {
