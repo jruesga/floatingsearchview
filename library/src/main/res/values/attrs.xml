@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="FloatingSearchView">
+        <attr name="floatingSearch_searchBarTextSize" format="dimension"/>
         <attr name="floatingSearch_searchBarWidth" format="dimension"/>
         <attr name="floatingSearch_searchBarMarginTop" format="dimension"/>
         <attr name="floatingSearch_searchBarMarginLeft" format="dimension"/>
