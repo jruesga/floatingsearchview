@@ -242,8 +242,9 @@ public class FloatingSearchView extends FrameLayout {
          * that the current search has completed.
          *
          * @param searchSuggestion
+         * @return whether close the soft keyboard and lost focus
          */
-        void onSuggestionClicked(SearchSuggestion searchSuggestion);
+        boolean onSuggestionClicked(SearchSuggestion searchSuggestion);
 
         /**
          * Called when the current search has completed
@@ -1245,8 +1246,9 @@ public class FloatingSearchView extends FrameLayout {
                     public void onItemSelected(SearchSuggestion item) {
                         mIsFocused = false;
 
+                        boolean focus = false;
                         if (mSearchListener != null) {
-                            mSearchListener.onSuggestionClicked(item);
+                            focus = mSearchListener.onSuggestionClicked(item);
                         }
 
                         mSkipTextChangeEvent = true;
@@ -1254,8 +1256,11 @@ public class FloatingSearchView extends FrameLayout {
                             setSearchBarTitle(item.getBody());
                         } else {
                             setSearchText(item.getBody());
+                            if (focus) {
+                                mSearchInput.setSelection(mSearchInput.getText().length());
+                            }
                         }
-                        setSearchFocusedInternal(false);
+                        setSearchFocusedInternal(focus);
                     }
 
                     @Override
