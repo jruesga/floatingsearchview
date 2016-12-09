@@ -2002,6 +2002,26 @@ public class FloatingSearchView extends FrameLayout {
         };
     }
 
+    public int getSelectionStart() {
+        return mSearchInput.getSelectionStart();
+    }
+
+    public int getSelectionEnd() {
+        return mSearchInput.getSelectionEnd();
+    }
+
+    public void getSelectionStart(int index) {
+        mSearchInput.setSelection(index);
+    }
+
+    public void getSelectionStart(int start, int end) {
+        mSearchInput.setSelection(start, end);
+    }
+
+    public CharSequence getText() {
+        return mSearchInput.getText();
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
