@@ -1,12 +1,16 @@
 package com.arlib.floatingsearchview.util.view;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
 public class SearchInputView extends EditText {
+
+    private boolean mCanHandleLongPress;
+    private OnLongClickListener mLongClickListener;
 
     private OnKeyboardSearchKeyClickListener mSearchKeyListener;
 
@@ -40,6 +44,14 @@ public class SearchInputView extends EditText {
 
     private void init() {
         setOnKeyListener(mOnKeyListener);
+        super.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                final boolean handled = !mCanHandleLongPress;
+                return !handled && mLongClickListener != null ?
+                        mLongClickListener.onLongClick(v) : handled;
+            }
+        });
     }
 
     @Override
@@ -64,5 +76,16 @@ public class SearchInputView extends EditText {
 
     public interface OnKeyboardSearchKeyClickListener {
         void onSearchKeyClicked();
+    }
+
+    @Override
+    protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
+        super.onFocusChanged(focused, direction, previouslyFocusedRect);
+        mCanHandleLongPress = focused;
+    }
+
+    @Override
+    public void setOnLongClickListener(OnLongClickListener cb) {
+        mLongClickListener = cb;
     }
 }
