@@ -1467,6 +1467,7 @@ public class FloatingSearchView extends FrameLayout {
                 mSkipTextChangeEvent = true;
                 mSearchInput.setText("");
             }
+            mSearchInput.setLongClickable(true);
             mClearButton.setVisibility((mSearchInput.getText().toString().length() == 0) ?
                     View.INVISIBLE : View.VISIBLE);
             if (mFocusChangeListener != null) {
@@ -1489,6 +1490,7 @@ public class FloatingSearchView extends FrameLayout {
                 mSkipTextChangeEvent = true;
                 mSearchInput.setText(mTitleText);
             }
+            mSearchInput.setLongClickable(false);
             if (mFocusChangeListener != null) {
                 mFocusChangeListener.onFocusCleared();
             }
